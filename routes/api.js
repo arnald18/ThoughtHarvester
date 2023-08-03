@@ -61,8 +61,39 @@ router.post("/notes", (req, res) => {
     });
 });
 
-router.post("/notes/:id", (req, res) => {
+router.delete("/notes/:id", (req, res) => {
+  const { id } = req.params;
+  if (!id) {
+    console.info("Failure, missing id param");
+    return res.status(400);
+  }
   //
+
+  readDatabase().then((notes) => {
+    // IF THE NOTE DOES NOT EXIST RETURN WITH AN ERROR STATUS
+    const index = notes.findIndex((note) => note.id === id);
+    if (index === -1) {
+      return res.status(500).json("Note does not exist");
+    }
+    const newNotes = notes.splice(index, 1);
+
+    writeFile(databasePath, JSON.stringify(newNotes))
+      .then(() => {
+        console.info("Success, deleted note from the database");
+        return res.status(201);
+      })
+      .catch((err) => {
+        console.info("Failure, could not delete note");
+        return res.status(500).json(err);
+      });
+  });
 });
 
 module.exports = router;
+
+// jSON.stringify(newNotes);
+
+// function stringify(obj) {
+//   // turn obj into a string
+//   // return string
+// }
