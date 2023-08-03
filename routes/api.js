@@ -29,6 +29,9 @@ router.get("/notes", (req, res) => {
   readDatabase()
     .then((notes) => {
       console.info("Success, sending notes");
+      if (notes.length === 0) {
+        return res.status(200).json([]);
+      }
       return res.status(200).json(notes);
     })
     .catch((err) => {
@@ -75,7 +78,8 @@ router.delete("/notes/:id", (req, res) => {
     if (index === -1) {
       return res.status(500).json("Note does not exist");
     }
-    const newNotes = notes.splice(index, 1);
+
+    const newNotes = notes.length === 1 ? [] : notes.splice(index, 1);
 
     writeFile(databasePath, JSON.stringify(newNotes))
       .then(() => {
